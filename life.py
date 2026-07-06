@@ -73,8 +73,8 @@ blackColor = (0, 0, 0)
 explainColor = (255, 255, 200)
 
 def screenCoords(x, y): # convert grid coordinates to screen coordinates
-	""" Transform grid (x,y) coordinates to pygame coordinates. """
-	return ((0.5+x-border)*cellwd, (0.5*y-border/2)*cellht)
+	""" Transform grid (x,y) coordinates to integer pygame coordinates. """
+	return (int((0.5+x-border)*cellwd), int((0.5*y-border/2)*cellht))
 
 historyDepth = 5
 
@@ -127,10 +127,16 @@ def say(sayThis, centre, color, font=boldFont):
 
 image = [0]*20
 maxImageIndex = len(image)-1
-for i in range(1, maxImageIndex+1):
-	# print(f"blend{i}.png")
-	image[i] = pygame.image.load(f"images/blend{i}.png") 
-	image[i] = pygame.transform.smoothscale(image[i], (0.8*cellwd, 0.8*cellwd))
+for i in range(1, maxImageIndex + 1):
+    path = f"images/blend{i}.png"
+    try:
+        surf = pygame.image.load(path).convert_alpha()
+        surf = pygame.transform.smoothscale(surf, (int(0.8 * cellwd), int(0.8 * cellwd)))
+    except Exception as e:
+        print(f"Warning: failed to load image {path}: {e}. Displaying a fallback rectangle instead...")
+        surf = pygame.Surface((int(0.8 * cellwd), int(0.8 * cellwd)), flags=pygame.SRCALPHA)
+        surf.fill((200, 200, 255, 255))
+    image[i] = surf
 
 initialScreen = [			   
 		(3, 21), # blinker
@@ -461,7 +467,7 @@ def main():
 					print("Stopped by hitting max limit of iterations")
 					break;
 				counter += 1
-				plot(explain = not randomised)
+				plot(doExplanations = not randomised)
 				nextgrid()
 				nextHistory()
 				pygame.display.flip()
