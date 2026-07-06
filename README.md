@@ -10,7 +10,7 @@ This project is Python code designed to run Game of Life exhibits endlessly runn
 
 - A pre-planned collection of named life forms
 
-= A random initial grid, which changes every time it is run
+- A random initial grid, which changes every time it is run
 
 - Plus a trifold flyer
 
