@@ -33,6 +33,10 @@ import pygame
 
 from pygame.locals import *
 
+def log(s):
+	""" Print logging info if you want it. """
+	print(s)
+
 #os.environ['SDL_VIDEO_CENTERED'] = '1'
 pygame.init()
 #info = pygame.display.Info()
@@ -52,11 +56,11 @@ fullWidth = w+2*border
 cellwd = round(screen.get_width() / w)
 cellht = round(2*screen.get_height() / h) # 2* to fix bug with Raspberry pi screen height half the size it should be
 
-print(f"Resolution = {fullWidth} x {fullHeight} cells")
-print(f"Resolution = {screen.get_width()} x {screen.get_height()} pixels")
-print(f"Cell size = {cellwd} x {cellht} pixels")
-print(f"pygame.display.get_desktop_sizes() = {pygame.display.get_desktop_sizes()}")
-print(f"... as you can see I haven't worked out why the Raspberry pi seems to have a half height monitor!")
+log(f"Resolution = {fullWidth} x {fullHeight} cells")
+log(f"Resolution = {screen.get_width()} x {screen.get_height()} pixels")
+log(f"Cell size = {cellwd} x {cellht} pixels")
+log(f"pygame.display.get_desktop_sizes() = {pygame.display.get_desktop_sizes()}")
+log(f"... as you can see I haven't worked out why the Raspberry pi seems to have a half height monitor!")
 #sys.exit(0)
 
 boldFont = pygame.font.SysFont(None, 35, bold=True) # None is "freesans"
@@ -99,12 +103,12 @@ def nextHistory():
 	 
 nextHistory() # initialise the history vector
 
-print(f"size of grid History = {len(gridHistory)}")
+log(f"size of grid History = {len(gridHistory)}")
 
 def equalGrids(a): # only compare what the user can see (exclude the borders)
 	""" Return if the current grid is in the history list, obviously excluding itself. """
 	global grid
-	if a == grid: 
+	if a is grid: 
 		return False  # don't test a==grid
 	for x in range(border, fullWidth-border):
 		for y in range(border, fullHeight-border):
@@ -133,7 +137,7 @@ for i in range(1, maxImageIndex + 1):
         surf = pygame.image.load(path).convert_alpha()
         surf = pygame.transform.smoothscale(surf, (int(0.8 * cellwd), int(0.8 * cellwd)))
     except Exception as e:
-        print(f"Warning: failed to load image {path}: {e}. Displaying a fallback rectangle instead...")
+        log(f"Warning: failed to load image {path}: {e}. Displaying a fallback rectangle instead...")
         surf = pygame.Surface((int(0.8 * cellwd), int(0.8 * cellwd)), flags=pygame.SRCALPHA)
         surf.fill((200, 200, 255, 255))
     image[i] = surf
@@ -226,7 +230,12 @@ def lifeForm(life, xoffset, yoffset):
 	""" Initialise grid[] with a life form, offset in x and y directions as necessary. """
 	for i in life:
 		x, y = i
-		grid[x+border+xoffset][y+border+yoffset] = 1
+		xx = x+border+xoffset
+		yy = y+border+yoffset
+		if 0 <= xx < fullWidth and 0 <= yy < fullHeight:
+			grid[xx][yy] = 1
+		else:
+			log(f"Life form coordinate ({x}, {y}) out of range - as used in lifeForm(...)")
 		plot()
 		pygame.display.flip()
 		time.sleep(.02)
@@ -464,7 +473,7 @@ def main():
 			while True:
 				limit -= 1
 				if limit <= 0:
-					print("Stopped by hitting max limit of iterations")
+					log("Stopped by hitting max limit of iterations")
 					break;
 				counter += 1
 				plot(doExplanations = not randomised)
@@ -474,7 +483,7 @@ def main():
 				events = pygame.event.get()
 				for event in events:
 					if event.type == pygame.KEYDOWN:
-						print("Stopped by keydown event")
+						log("Stopped by keydown event")
 						fullbreak = True
 						break
 				if fullbreak: 
@@ -490,26 +499,26 @@ def main():
 							stopAfterExplanations = False
 							break
 					if stopAfterExplanations:   
-						print(f"Stopped by all life forms explained at least {limit} time(s)")
-						print(f"explainCount={explainCount}")
+						log(f"Stopped by all life forms explained at least {limit} time(s)")
+						log(f"explainCount={explainCount}")
 						break
 				if repeatCountDown:
 					repeatCountDown -= 1
 					if not repeatCountDown: 
-						print("Stopped by repeating pattern")
+						log("Stopped by repeating pattern")
 						break;
 				time.sleep(0.1 if randomised else 0.5)
 
 			end()
 			
 		except KeyboardInterrupt:
-			print("Interrupted run!")
+			log("Interrupted run!")
 	
 	pygame.display.flip()
 	time.sleep(.0) # set it to >0 to make it easy to trim if necessary
 	pygame.quit()
-	print(f"{counter} runs, averaging {counter/len(demoSchedule)} runs per demo")
-	print(f"Full game size = {fullHeight*fullWidth} cells")
+	log(f"{counter} runs, averaging {counter/len(demoSchedule)} runs per demo")
+	log(f"Full game size = {fullHeight*fullWidth} cells")
 	sys.exit(0)
 	
 main()
